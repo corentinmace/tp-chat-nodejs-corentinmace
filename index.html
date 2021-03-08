@@ -76,8 +76,18 @@
            background: #333;
 
         }
+        #onlineUsers {
+            display: flex;
+            position: fixed;
+            right: 0;
+            justify-content: center;
+            align-items: center;
+        }
 </style>
 <body>
+    <div id="onlineUsers">
+        <p id="users">0</p> <img src="https://miro.medium.com/max/512/1*nZ9VwHTLxAfNCuCjYAkajg.png" height="20px" width="20px" alt="">
+    </div>
     <ul id="messages">
     </ul>
     <form id="form" action="">
@@ -88,10 +98,13 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
   let socket = io();
-  
+
   let messages = document.getElementById('messages');
   let form = document.getElementById('form');
   let input = document.getElementById('input');
+  let connected = document.getElementById('users');
+
+  
 
   form.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -99,6 +112,8 @@
       socket.emit('chat message', input.value);
       input.value = '';
     }
+
+
   });
 
   socket.on('chat message', function(msg) {
@@ -107,5 +122,9 @@
     messages.appendChild(item);
     window.scrollTo(0, document.body.scrollHeight);
   });
+
+  socket.on('connectedUsers', function(connectedUsers) {
+      connected.innerHTML = connectedUsers;
+  })
 </script>
 </html>

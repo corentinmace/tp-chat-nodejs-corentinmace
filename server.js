@@ -29,12 +29,15 @@ io.on ('connection', (socket) => {
 
       });
       countUsers(connectedUsers);
+
       socket.on('chat message', (msg) => {
         io.emit('chat message', msg);
       });
 
       function countUsers(users) {
         
-          console.log(`Utilisateurs en ligne : ${connectedUsers}`)
+        io.emit('connectedUsers', connectedUsers)
+
+        console.log(`Utilisateurs en ligne : ${connectedUsers}`)
       }
 })
