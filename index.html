@@ -132,11 +132,9 @@
       console.log(stocked)
       for (let index = 0; index < stocked.length; index++) {
         let item = document.createElement('li');
-    item.textContent = stocked[index];
-    console.log(stocked[index].value)
-    messages.appendChild(item);
-    window.scrollTo(0, document.body.scrollHeight);
-          
+         item.textContent = stocked[index];
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);       
       }
   })
 </script>
