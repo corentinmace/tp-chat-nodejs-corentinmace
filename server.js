@@ -5,7 +5,7 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http)
 
 let connectedUsers = 0;
-
+let stockingMessages = [];
 
 app.get('/', (req, res) => {
    res.sendFile(__dirname + '/index.html');
@@ -18,6 +18,7 @@ http.listen(3000, () => {
 io.on ('connection', (socket) => {
     console.log('Utilisateur connecté')
     io.emit('chat message', `Un utilisateur s'est connecté`);
+    socket.emit('stocked messages', stockingMessages);
     connectedUsers++;
 
 
@@ -32,6 +33,9 @@ io.on ('connection', (socket) => {
 
       socket.on('chat message', (msg) => {
         io.emit('chat message', msg);
+        stockingMessages.push(msg)
+        console.log(stockingMessages);
+        
       });
 
       function countUsers(users) {
