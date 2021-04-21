@@ -130,12 +130,10 @@
 
   socket.on('stocked messages', function(stocked) {
       console.log(stocked)
-      for (let index = 0; index < stocked.length; index++) {
-        let item = document.createElement('li');
-         item.textContent = stocked[index];
+      let item = document.createElement('li');
+         item.textContent = stocked;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);       
-      }
   })
 </script>
 </html>
