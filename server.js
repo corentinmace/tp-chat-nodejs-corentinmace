@@ -4,44 +4,74 @@ const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http)
 
-let connectedUsers = 0;
-let stockingMessages = [];
+const { MongoClient } = require('mongodb');
 
-app.get('/', (req, res) => {
-   res.sendFile(__dirname + '/index.html');
-});
+const uri = 'mongodb://localhost:27017/';
+const client = new MongoClient(uri);
 
-http.listen(3000, () => {
-    console.log('Server ready');
-  });
+client.connect((err, db) => {
+  if (err) {
+    process.exit(1);
+  } else {
+    let dbo = db.db('nodejsTpChat');
+    console.log("Bdd connected")
+    let connectedUsers = 0;
 
-io.on ('connection', (socket) => {
-    console.log('Utilisateur connecté')
-    io.emit('chat message', `Un utilisateur s'est connecté`);
-    socket.emit('stocked messages', stockingMessages);
-    connectedUsers++;
+    let stockedMessages = [];
 
+    app.get('/', (req, res) => {
+      res.sendFile(__dirname + '/index.html');
+    });
 
-    socket.on('disconnect', () => {
-        console.log('Utilisateur deconnecté');
-        io.emit('chat message', `Un utilisateur s'est déconnecté`);
-        connectedUsers--;
-        countUsers(connectedUsers);
-
-      });
-      countUsers(connectedUsers);
-
-      socket.on('chat message', (msg) => {
-        io.emit('chat message', msg);
-        stockingMessages.push(msg)
-        console.log(stockingMessages);
-        
+    http.listen(3000, () => {
+        console.log('Server ready');
       });
 
-      function countUsers(users) {
-        
-        io.emit('connectedUsers', connectedUsers)
+    io.on ('connection', (socket) => {
+        console.log('Utilisateur connecté')
+        io.emit('chat message', `Un utilisateur s'est connecté`);
 
-        console.log(`Utilisateurs en ligne : ${connectedUsers}`)
-      }
+        dbo.collection("messages").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
+          if (err) throw err;
+          for (let i = 0; i < result.length; i++) {
+            //stockedMessages.push(result[i].message);
+            console.log(result.length);
+            console.log(result[i].message);
+            socket.emit('stocked messages', result[i].message);
+          }
+          
+        })
+        console.log(stockedMessages);
+        connectedUsers++;
+
+
+        socket.on('disconnect', () => {
+            console.log('Utilisateur deconnecté');
+            io.emit('chat message', `Un utilisateur s'est déconnecté`);
+            connectedUsers--;
+            countUsers(connectedUsers);
+
+          });
+          countUsers(connectedUsers);
+
+          socket.on('chat message', (msg) => {
+            io.emit('chat message', msg);
+            let obj = {message: msg}
+            dbo.collection('messages').insertOne(obj, function(err, res) {
+              if (err) throw err;
+              console.log("Message inserted")
+            })
+          });
+
+          function countUsers(users) {
+            
+            io.emit('connectedUsers', connectedUsers)
+
+            console.log(`Utilisateurs en ligne : ${connectedUsers}`)
+
+          }
+    })
+  }
 })
+
+
